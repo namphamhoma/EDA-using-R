@@ -1,0 +1,132 @@
+---
+title: ' Exploring Airbnb Listings in New York City'
+author: "Nam Pham"
+date: "2023-05-02"
+output: github_document
+Dataset: "Airbnb Listings in New York City from Kaggle (https://www.kaggle.com/dgomonov/new-york-city-airbnb-open-data)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+I) PROJECT DESCRIPTION
+
+This is a report that we will analyze a dataset of Airbnb listings in New York City to gain insights into the rental market in the city. We will explore the data using R and perform data cleaning and preprocessing steps. We will then conduct exploratory data analysis (EDA) to uncover trends and patterns in the data. Finally, we will draw some graphs to visualize our findings and communicate to others.
+
+II) LOADING PACKAGES AND DATA
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+# Import data
+data <- read.csv(file.choose())
+head(data)
+```
+
+```{r}
+#Display the structure of data
+str(data)
+```
+```{r}
+dim(data)
+```
+III) DATA CLEANING
+
+```{r}
+#Check for missing values
+sum(is.na(data))
+data <- na.omit(data)
+
+```
+
+```{r}
+# Check for duplicates
+sum(duplicated(data))
+```
+```{r}
+# Convert "last_review' column from character to datetime format
+data$last_review <- ymd(data$last_review)
+class(data$last_review)
+
+```
+
+IV) EXPLORE THE DATA
+
+Descriptive Statistics
+```{r}
+summary(data)
+```
+
+
+Here are some questions we could explore using this dataset:
+
+1.What are the most popular neighborhoods in New York City for Airbnb rentals?
+
+```{r}
+ggplot(data,aes(neighbourhood_group))+
+  geom_bar()
+```
+
+
+```{r}
+data %>%
+  count(neighbourhood) %>%
+  arrange(desc(n)) %>%
+  head(10)
+```
+
+2.What types of properties are most commonly listed on Airbnb in New York City?
+
+```{r}
+data %>%
+  count(room_type) %>%
+  arrange(desc(n))
+```
+
+3.How do prices vary by neighborhood and property type?
+
+```{r}
+data %>%
+  group_by(neighbourhood, room_type) %>%
+  summarize(avg_price = mean(price)) %>%
+  arrange(desc(avg_price))
+```
+
+4.Compare the number of Airbnb rental listings across different neighborhoods and room types
+```{r}
+data %>%
+  group_by(neighbourhood_group, room_type) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = neighbourhood_group, y = n, fill = room_type)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Neighborhood_group", y = "Number of Listings", title = "Number of Airbnb Rental Listings by Neighborhood and Room Type") +
+  theme_bw()
+```
+```{r}
+# Select only numerical variables
+numerical_vars <- data %>% 
+  select_if(is.numeric)
+
+# Compute correlation matrix
+cor_matrix <- cor(numerical_vars)
+
+# Print correlation matrix
+print(cor_matrix)
+```
+```{r}
+# Load ggcorrplot package
+library(ggcorrplot)
+
+# Create correlation plot
+ggcorrplot(cor_matrix, type = "lower")
+```
+
+
+
+
+
+
